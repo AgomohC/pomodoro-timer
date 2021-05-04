@@ -1,5 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import { useInterval } from "@use-it/interval";
 import { FaArrowDown, FaArrowUp, FaPause, FaPlay } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
 
@@ -7,27 +8,32 @@ const App = () => {
   const [breakLength, setBreakLength] = useState(5);
   const [sessionLength, setSessionLength] = useState(25);
   const [remainingTime, setRemainingTime] = useState("");
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused, setIsPaused] = useState(true);
 
+  useInterval();
   useEffect(() => {
-    const getTime = () => {
-      if (sessionLength) {
-        let time = sessionLength * 60;
-        setInterval(() => time--, 1000);
-        let secs = time % sessionLength;
-        let mins = Math.floor(sessionLength / 60);
-        setRemainingTime(`${mins}:${secs}`);
-      }
-      if (!sessionLength) {
-        let etime = breakLength * 60;
-        setInterval(() => etime--, 1000);
-        let secs = etime % sessionLength;
-        let mins = Math.floor(sessionLength / 60);
-        setRemainingTime(`${mins}:${secs}`);
-      }
-    };
-    getTime();
-  }, [setRemainingTime]);
+    const interval = setInterval(() => {}, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  // useEffect(() => {
+  //   const getTime = () => {
+  //     if (sessionLength) {
+  //       let time = sessionLength * 60;
+  //       setInterval(() => time--, 1000);
+  //       let secs = time % sessionLength;
+  //       let mins = Math.floor(sessionLength / 60);
+  //       setRemainingTime(`${mins}:${secs}`);
+  //     }
+  //     if (!sessionLength) {
+  //       let etime = breakLength * 60;
+  //       setInterval(() => etime--, 1000);
+  //       let secs = etime % sessionLength;
+  //       let mins = Math.floor(sessionLength / 60);
+  //       setRemainingTime(`${mins}:${secs}`);
+  //     }
+  //   };
+  //   getTime();
+  // }, [setRemainingTime]);
 
   return (
     <main className="bg-dark">
