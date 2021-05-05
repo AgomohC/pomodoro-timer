@@ -1,39 +1,69 @@
 import React from "react";
-import { useState, useEffect } from "react";
-import { useInterval } from "@use-it/interval";
+import { useState, useEffect, useRef } from "react";
 import { FaArrowDown, FaArrowUp, FaPause, FaPlay } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
 
 const App = () => {
   const [breakLength, setBreakLength] = useState(5);
   const [sessionLength, setSessionLength] = useState(25);
-  const [remainingTime, setRemainingTime] = useState("");
+  const [remainingTime, setRemainingTime] = useState(sessionLength * 60);
   const [isPaused, setIsPaused] = useState(true);
+  const [period, setPeriod] = useState("session");
 
-  useInterval();
+  const sound = useRef();
+
+  ////////////////////////////
+  // Custom Hook useInterval//
+  ////////////////////////////
+
+  function useInterval(callback, delay) {
+    const savedCallback = useRef();
+
+    useEffect(() => {
+      savedCallback.current = callback;
+    }, [callback]);
+
+    useEffect(() => {
+      function tick() {
+        savedCallback.current();
+      }
+      if (delay !== null) {
+        let id = setInterval(tick, delay);
+        return () => clearInterval(id);
+      }
+    }, [delay]);
+  }
+
+  ///////////////////////////////////////
+  ///////////////////////////////////////
+  ///////////////////////////////////////
+  useInterval(
+    () => {
+      if (!isPaused && remainingTime > 0) {
+        setRemainingTime(remainingTime - 1);
+      }
+      if (remainingTime === 0) {
+        setPeriod(period === "session" ? "break" : "session");
+        setRemainingTime(
+          period === "session" ? breakLength * 60 : sessionLength * 60
+        );
+        sound.current.currentTime = 0;
+        sound.current.play();
+      }
+    },
+    !isPaused ? 1000 : null
+  );
   useEffect(() => {
-    const interval = setInterval(() => {}, 1000);
-    return () => clearInterval(interval);
-  }, []);
-  // useEffect(() => {
-  //   const getTime = () => {
-  //     if (sessionLength) {
-  //       let time = sessionLength * 60;
-  //       setInterval(() => time--, 1000);
-  //       let secs = time % sessionLength;
-  //       let mins = Math.floor(sessionLength / 60);
-  //       setRemainingTime(`${mins}:${secs}`);
-  //     }
-  //     if (!sessionLength) {
-  //       let etime = breakLength * 60;
-  //       setInterval(() => etime--, 1000);
-  //       let secs = etime % sessionLength;
-  //       let mins = Math.floor(sessionLength / 60);
-  //       setRemainingTime(`${mins}:${secs}`);
-  //     }
-  //   };
-  //   getTime();
-  // }, [setRemainingTime]);
+    setRemainingTime(remainingTime);
+  }, [remainingTime]);
+
+  const displayTime = () => {
+    let mins = Math.floor(remainingTime / 60);
+    let secs = remainingTime - mins * 60;
+    return `${mins < 10 ? `0${mins.toString()}` : mins.toString()} : ${
+      secs < 10 ? `0${secs.toString()}` : secs.toString()
+    }`;
+  };
 
   return (
     <main className="bg-dark">
@@ -50,8 +80,16 @@ const App = () => {
                     onClick={() => {
                       if (breakLength >= 60) {
                         setBreakLength(60);
+                        setRemainingTime(
+                          period === "break" ? breakLength * 60 : remainingTime
+                        );
                       } else {
                         setBreakLength(breakLength + 1);
+                        setRemainingTime(
+                          period === "break"
+                            ? (breakLength + 1) * 60
+                            : remainingTime
+                        );
                       }
                     }}
                   >
@@ -63,8 +101,18 @@ const App = () => {
                     onClick={() => {
                       if (breakLength <= 1) {
                         setBreakLength(1);
+                        setRemainingTime(
+                          period === "session"
+                            ? breakLength * 60
+                            : remainingTime
+                        );
                       } else {
                         setBreakLength(breakLength - 1);
+                        setRemainingTime(
+                          period === "session"
+                            ? (breakLength - 1) * 60
+                            : remainingTime
+                        );
                       }
                     }}
                   >
@@ -80,8 +128,10 @@ const App = () => {
                     onClick={() => {
                       if (sessionLength >= 60) {
                         setSessionLength(60);
+                        setRemainingTime(sessionLength * 60);
                       } else {
                         setSessionLength(sessionLength + 1);
+                        setRemainingTime((sessionLength + 1) * 60);
                       }
                     }}
                   >
@@ -93,8 +143,10 @@ const App = () => {
                     onClick={() => {
                       if (sessionLength <= 1) {
                         setSessionLength(1);
+                        setRemainingTime(sessionLength * 60);
                       } else {
                         setSessionLength(sessionLength - 1);
+                        setRemainingTime((sessionLength - 1) * 60);
                       }
                     }}
                   >
@@ -103,13 +155,11 @@ const App = () => {
                 </div>
               </div>
             </div>
-            <div className="row mt-3">
-              <h5 className="col-12 text-center  mx-auto">
-                {sessionLength ? "session" : "break"}
-              </h5>
-              <h4 className="col display-4 text-center">{remainingTime}</h4>
+            <div className="row mt-4 ">
+              <h5 className="col-12 text-center mb-1 mx-auto">{period}</h5>
+              <h4 className="col display-4 text-center">{displayTime()}</h4>
             </div>
-            <div className="row mt-3 mx-auto justify-content-center">
+            <div className="row mt-3 mb-4 mx-auto justify-content-center">
               <div className="col-lg-8 justify-content-around row">
                 <button
                   className="btn btn-dark mx-3 col-3"
@@ -119,25 +169,33 @@ const App = () => {
                 >
                   <FaPlay />
                 </button>
-                <button className="btn btn-dark mx-3 col-3">
-                  <FaPause
-                    onClick={() => {
-                      setIsPaused(true);
-                    }}
-                  />
+                <button
+                  className="btn btn-dark mx-3 col-3"
+                  onClick={() => {
+                    setIsPaused(true);
+                    console.log(isPaused);
+                  }}
+                >
+                  <FaPause />
                 </button>
                 <button
                   className="btn btn-dark mx-3 col-3"
                   onClick={() => {
                     setBreakLength(5);
                     setSessionLength(25);
-                    setRemainingTime("25:00");
+                    setRemainingTime(sessionLength * 60);
+                    setIsPaused(true);
                   }}
                 >
                   <GrPowerReset />
                 </button>
               </div>
             </div>
+            <audio
+              ref={sound}
+              src="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"
+              type="audio"
+            />
           </article>
         </div>
       </section>
