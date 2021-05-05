@@ -102,14 +102,12 @@ const App = () => {
                       if (breakLength <= 1) {
                         setBreakLength(1);
                         setRemainingTime(
-                          period === "session"
-                            ? breakLength * 60
-                            : remainingTime
+                          period === "break" ? breakLength * 60 : remainingTime
                         );
                       } else {
                         setBreakLength(breakLength - 1);
                         setRemainingTime(
-                          period === "session"
+                          period === "break"
                             ? (breakLength - 1) * 60
                             : remainingTime
                         );
@@ -128,10 +126,18 @@ const App = () => {
                     onClick={() => {
                       if (sessionLength >= 60) {
                         setSessionLength(60);
-                        setRemainingTime(sessionLength * 60);
+                        setRemainingTime(
+                          period === "session"
+                            ? sessionLength * 60
+                            : remainingTime
+                        );
                       } else {
                         setSessionLength(sessionLength + 1);
-                        setRemainingTime((sessionLength + 1) * 60);
+                        setRemainingTime(
+                          period === "session"
+                            ? (sessionLength + 1) * 60
+                            : remainingTime
+                        );
                       }
                     }}
                   >
@@ -143,10 +149,18 @@ const App = () => {
                     onClick={() => {
                       if (sessionLength <= 1) {
                         setSessionLength(1);
-                        setRemainingTime(sessionLength * 60);
+                        setRemainingTime(
+                          period === "session"
+                            ? sessionLength * 60
+                            : remainingTime
+                        );
                       } else {
                         setSessionLength(sessionLength - 1);
-                        setRemainingTime((sessionLength - 1) * 60);
+                        setRemainingTime(
+                          period === "session"
+                            ? (sessionLength - 1) * 60
+                            : remainingTime
+                        );
                       }
                     }}
                   >
@@ -183,7 +197,7 @@ const App = () => {
                   onClick={() => {
                     setBreakLength(5);
                     setSessionLength(25);
-                    setRemainingTime(sessionLength * 60);
+                    setRemainingTime(25 * 60);
                     setIsPaused(true);
                     setPeriod("session");
                   }}
