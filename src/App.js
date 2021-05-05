@@ -185,6 +185,7 @@ const App = () => {
                     setSessionLength(25);
                     setRemainingTime(sessionLength * 60);
                     setIsPaused(true);
+                    setPeriod("session");
                   }}
                 >
                   <GrPowerReset />
